@@ -58,8 +58,6 @@ async function asyncCall() {
         }
     }
 
-    let iter = 1;
-
     for (const page_iter of pages_from_file) {
         await div_with_data.type(page_iter);
         await sleep(500);
@@ -69,9 +67,7 @@ async function asyncCall() {
 
         const obj = JSON.parse(elementText_pre);
 
-        console.log(iter, ';', obj['result']['items'][0]['point']['lat'], ';', obj['result']['items'][0]['point']['lon'], ';');
-
-        iter++;
+        console.log(obj['result']['items'][0]['point']['lat'], ',', obj['result']['items'][0]['point']['lon']);
 
         await page.evaluate(div_with_data => div_with_data.value = '', div_with_data);
         await sleep(500);
