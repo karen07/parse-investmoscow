@@ -25,17 +25,21 @@ async function asyncCall() {
         timeout: 1000
     }).then(() => {
         open_page_success = 1;
-    }).catch((res) => { })
+    }).catch((res) => { });
 
     await sleep(5000);
 
-    for (let i = 1; i <= 58; i++) {
+    const pages_array = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('.js-page-num-selector option')).map(element => element.value)
+    );
+
+    for (let i = 1; i <= pages_array.length; i++) {
         page.select('.js-page-num-selector', i.toString());
         await sleep(1000);
-        const address_list = await page.$$('.table-title')
+        const address_list = await page.$$('.table-title');
         for (const address of address_list) {
             const elementText = await page.evaluate(address => address.innerText, address);
-            console.log(elementText)
+            console.log(elementText);
         }
     }
 
