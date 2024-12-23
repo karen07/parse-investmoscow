@@ -25,44 +25,43 @@ async function asyncCall() {
         timeout: 1000
     }).then(() => {
         open_page_success = 1;
-    }).catch((res) => { })
+    }).catch((res) => { });
 
     let pages_from_file = [];
     require('fs').readFileSync('renovation_addresses.txt', 'utf-8').split(/\r?\n/).forEach(function (line) {
         if (line != '') {
             pages_from_file.push(line);
         }
-    })
+    });
+
+    const all_p = await page.$$('p');
+    let p_with_data;
+    for (const k of all_p) {
+        const elementText = await page.evaluate(k => k.innerText, k);
+        if (elementText === "Ответ") {
+            p_with_data = k;
+            break;
+        }
+    }
+
+    await sleep(1000);
+    p_with_data.click();
+    await sleep(1000);
+
+    const all_divs = await page.$$('input');
+    let div_with_data;
+    for (const k of all_divs) {
+        const elementText = await page.evaluate(k => k.placeholder, k);
+        if (elementText === "Начните вводить") {
+            div_with_data = k;
+            break;
+        }
+    }
 
     let iter = 1;
 
     for (const page_iter of pages_from_file) {
-        await sleep(500);
-
-        const all_divs = await page.$$('input');
-        let div_with_data;
-        for (const k of all_divs) {
-            const elementText = await page.evaluate(k => k.placeholder, k);
-            if (elementText === "Начните вводить") {
-                div_with_data = k;
-                break;
-            }
-        }
-
         await div_with_data.type(page_iter);
-
-        const all_p = await page.$$('p');
-        let p_with_data;
-        for (const k of all_p) {
-            const elementText = await page.evaluate(k => k.innerText, k);
-            if (elementText === "Ответ") {
-                p_with_data = k;
-                break;
-            }
-        }
-
-        await sleep(500);
-        p_with_data.click();
         await sleep(500);
 
         const all_pre = await page.$('pre');
@@ -74,7 +73,8 @@ async function asyncCall() {
 
         iter++;
 
-        const elementText = await page.evaluate(div_with_data => div_with_data.value = '', div_with_data);
+        await page.evaluate(div_with_data => div_with_data.value = '', div_with_data);
+        await sleep(500);
     }
     await browser.close();
 }

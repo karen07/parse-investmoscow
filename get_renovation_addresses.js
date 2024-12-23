@@ -33,8 +33,8 @@ async function asyncCall() {
         Array.from(document.querySelectorAll('.js-page-num-selector option')).map(element => element.value)
     );
 
-    for (let i = 1; i <= pages_array.length; i++) {
-        page.select('.js-page-num-selector', i.toString());
+    for (const i of pages_array) {
+        page.select('.js-page-num-selector', i);
         await sleep(1000);
         const address_list = await page.$$('.table-title');
         for (const address of address_list) {
