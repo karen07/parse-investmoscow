@@ -11,7 +11,17 @@ function sleep(ms) {
 const threads_count = 4;
 
 async function asyncCall(thread) {
-    let url_stock = 'https://investmoscow.ru/tenders?pageNumber=%url&pageSize=100&orderBy=CreateDate&orderAsc=%flag&objectTypes=nsi:41:30011568&tenderStatus=nsi:tender_status_tender_filter:2&timeToPublicTransportStop.noMatter=true'
+    let url_stock = 'https://investmoscow.ru/tenders?' +
+        'pageNumber=%url&' +
+        'pageSize=100&' +
+        'orderBy=CreateDate&' +
+        'orderAsc=%flag&' +
+        'objectTypes=nsi:41:30011568,nsi:41:30020049&' +
+        'tenderStatus=nsi:tender_status_tender_filter:2&' +
+        'timeToPublicTransportStop.max=0&' +
+        'timeToPublicTransportStop.foot=false&' +
+        'timeToPublicTransportStop.publicTransport=false&' +
+        'timeToPublicTransportStop.noMatter=true';
     let pages_num = [];
     for (let page_num = 1; page_num <= 150; page_num++) {
         pages_num.push(page_num);
@@ -151,7 +161,7 @@ async function asyncCall(thread) {
         for (const i of new_flat) {
             let elementText = await page.evaluate(i => i.href, i);
             elementText += "\n";
-            fs.appendFileSync(page_num.toString() + '.txt', elementText);
+            fs.appendFileSync('ids/' + page_num.toString() + '.txt', elementText);
         }
 
         await browser.close();
