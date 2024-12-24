@@ -153,7 +153,7 @@ async function asyncCall(thread) {
         }
 
         try {
-            fs.unlinkSync(page_num.toString() + '.txt');
+            fs.unlinkSync('ids/' + page_num.toString() + '.txt');
         } catch (err) { }
 
         const new_flat = await flat_data.$$('a');
