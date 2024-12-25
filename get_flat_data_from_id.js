@@ -77,7 +77,7 @@ async function asyncCall(thread) {
 
         const out_string = page_iter + ".json";
         try {
-            fs.unlinkSync(out_string);
+            fs.unlinkSync('data/' + out_string);
         } catch (err) { }
 
         //const pageSourceHTML = await page.content();
@@ -86,7 +86,7 @@ async function asyncCall(thread) {
         const pre_tag = await page.$('pre');
         let pre_tag_data = await page.evaluate(pre_tag => pre_tag.innerHTML, pre_tag);
 
-        fs.appendFileSync(out_string, pre_tag_data);
+        fs.appendFileSync('data/' + out_string, pre_tag_data);
 
         console.log(thread, " page:", page_iter);
         await page.close();
