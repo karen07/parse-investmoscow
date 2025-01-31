@@ -14,8 +14,6 @@ async function asyncCall() {
 		"features": []
 	};
 
-
-
 	for (const i of pages) {
 		lines = '';
 		require('fs').readFileSync("data/" + i, 'utf-8').split(/\r?\n/).forEach(function (line) {
@@ -25,7 +23,6 @@ async function asyncCall() {
 		})
 
 		const obj = JSON.parse(lines);
-
 
 		const latitude = obj["data"]["objLkLatitude"];
 		const longitude = obj["data"]["objLkLongitude"];
@@ -42,7 +39,7 @@ async function asyncCall() {
 						parseFloat(latitude)
 					]
 				},
-				"properties": {}
+				"properties": { "marker-color": "#" + (toInteger(soldOut * 256)).toString(16) + (toInteger(soldOut * 256)).toString(16) + (toInteger(soldOut * 256)).toString(16) }
 			};
 			user["features"].push(data);
 		}
