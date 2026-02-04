@@ -106,7 +106,30 @@ async function asyncCall(thread) {
         }
 
         if (more_flag) {
-            next_span.click();
+            const isDisabled = await page.evaluate((el) => {
+                const host = el.closest('button, a, [role="button"]') || el;
+
+                const ariaDisabled =
+                    el.getAttribute('aria-disabled') === 'true' ||
+                    host.getAttribute('aria-disabled') === 'true';
+
+                const disabledAttr = host.hasAttribute('disabled');
+
+                const cls = (host.className || '') + ' ' + (el.className || '');
+                const classDisabled = /disabled|inactive|is-disabled/i.test(cls);
+
+                const style = window.getComputedStyle(host);
+                const notClickable =
+                    style.pointerEvents === 'none' || style.visibility === 'hidden' || style.display === 'none';
+
+                return ariaDisabled || disabledAttr || classDisabled || notClickable;
+            }, next_span);
+
+            if (isDisabled) {
+                more_flag = 0;
+            } else {
+                await next_span.click();
+            }
         }
     }
 
