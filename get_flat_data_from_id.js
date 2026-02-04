@@ -20,8 +20,14 @@ async function asyncCall(thread) {
     const thread_pages = lodash.chunk(pages_from_file, Math.ceil(pages_from_file.length / threads_count))[thread];
     for (const page_iter of thread_pages) {
         const browser = await puppeteer.launch({
-            headless: true
+            headless: false,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+            ],
         });
+
         const page = await browser.newPage();
 
         await page.setExtraHTTPHeaders({

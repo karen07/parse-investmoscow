@@ -9,8 +9,14 @@ function sleep(ms) {
 
 async function asyncCall() {
     const browser = await puppeteer.launch({
-        headless: true
+        headless: false,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+        ],
     });
+
     const page = await browser.newPage();
 
     await page.setViewport({

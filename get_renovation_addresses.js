@@ -9,8 +9,14 @@ function sleep(ms) {
 
 async function asyncCall() {
     const browser = await puppeteer.launch({
-        headless: true
+        headless: false,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+        ],
     });
+
     const page = await browser.newPage();
 
     await page.setViewport({
@@ -38,7 +44,10 @@ async function asyncCall() {
         await sleep(1000);
         const address_list = await page.$$('.table-title');
         for (const address of address_list) {
-            const elementText = await page.evaluate(address => address.innerText, address);
+            const elementText = await page.evaluate(
+                address => address.innerText.replace(/\s*\n\s*/g, ' ').trim(),
+                address
+            );
             console.log(elementText);
         }
     }

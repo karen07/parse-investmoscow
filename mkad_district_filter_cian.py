@@ -90,13 +90,9 @@ def build_cian_url(polygon_coords_lonlat, center_lat, center_lon, *, zoom=10, ma
 
     base = (
         "https://www.cian.ru/cat.php?"
-        "currency=2&deal_type=sale&engine_version=2&flat_share=2"
-        "&is_first_floor=0&minlift=1&mintarea=34&minkarea=7"
-        f"&maxprice={int(maxprice)}"
-        "&object_type[0]=1&offer_type=flat&only_flat=1"
-        "&wp=1"
-        f"&zoom={int(zoom)}"
-        "&origin=map"
+        "currency=2&deal_type=sale&engine_version=2&flat_share=2&"
+        "minkarea=8&mintarea=34&object_type[0]=1&offer_type=flat&"
+        "only_flat=1&polygon_name[0]=default_name_0&wp=1&zoom=10"
     )
 
     return f"{base}&center={center}&in_polygon[0]={in_polygon}"

@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "lodash": "^4.17.21",
-    "puppeteer": "^22.12.1",
-    "simplify-geojson": "^1.0.5"
+    "lodash": "latest",
+    "puppeteer": "latest",
+    "simplify-geojson": "latest"
   }
 }

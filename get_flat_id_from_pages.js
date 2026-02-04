@@ -30,8 +30,14 @@ async function asyncCall(thread) {
     for (const page_num of thread_pages) {
 
         const browser = await puppeteer.launch({
-            headless: true
+            headless: false,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+            ],
         });
+
         const page = await browser.newPage();
 
         await page.setRequestInterception(true);
