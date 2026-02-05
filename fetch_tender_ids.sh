@@ -1,7 +1,8 @@
 #!/bin/sh
 
-URL_SEARCH='https://api.investmoscow.ru/investmoscow/tender/v2/filtered-tenders/searchtenderobjects'
-URL_INFO_BASE='https://api.investmoscow.ru/investmoscow/tender/v1/object-info/gettenderobjectinformation?tenderId='
+API_BASE='https://api.investmoscow.ru/investmoscow/tender'
+URL_SEARCH="$API_BASE/v2/filtered-tenders/searchtenderobjects"
+URL_INFO_BASE="$API_BASE/v1/object-info/gettenderobjectinformation?tenderId="
 
 PAGE_SIZE=100
 OUT_IDS='ids.txt'
