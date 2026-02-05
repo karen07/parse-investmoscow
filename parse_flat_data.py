@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import json
 import re
 import statistics
@@ -99,15 +100,15 @@ def parse_year_from_date(s: str | None):
 
 def build_label_map(obj: dict):
     m = {}
-    for item in (obj.get("procedureInfo") or []):
+    for item in obj.get("procedureInfo") or []:
         lab = item.get("label")
         if lab is not None:
             m[lab] = item.get("value")
-    for item in (obj.get("objectInfo") or []):
+    for item in obj.get("objectInfo") or []:
         lab = item.get("label")
         if lab is not None:
             m[lab] = item.get("value")
-    for item in (obj.get("visualBlockInfo") or []):
+    for item in obj.get("visualBlockInfo") or []:
         lab = item.get("label")
         if lab is not None:
             m[lab] = item.get("value")
@@ -177,7 +178,9 @@ def main():
     underflow = 0
     overflow = 0
 
-    print("tenderId;year;area_m2;start_price;final_price;ratio;delta_pct;delta_rub;dist_m;file")
+    print(
+        "tenderId;year;area_m2;start_price;final_price;ratio;delta_pct;delta_rub;dist_m;file"
+    )
 
     for p in files:
         try:
@@ -185,7 +188,9 @@ def main():
             if not obj:
                 continue
 
-            status = obj.get("sidebar", {}).get("tenderStatusInfo", {}).get("statusText", "")
+            status = (
+                obj.get("sidebar", {}).get("tenderStatusInfo", {}).get("statusText", "")
+            )
             if status not in OK_STATUSES:
                 continue
 
@@ -208,7 +213,9 @@ def main():
 
             labels = build_label_map(obj)
 
-            start_s = labels.get("Начальная цена за объект") or obj.get("sidebar", {}).get("startPrice")
+            start_s = labels.get("Начальная цена за объект") or obj.get(
+                "sidebar", {}
+            ).get("startPrice")
             final_s = labels.get("Итоговая цена")
 
             start = parse_money_rub(start_s)
@@ -228,7 +235,9 @@ def main():
             deltas_rub.append(delta_rub)
 
             year = parse_year_from_date(labels.get("Дата начала приёма заявок"))
-            area = parse_area_m2(labels.get("Общая площадь")) or parse_area_m2(labels.get("Площадь объекта"))
+            area = parse_area_m2(labels.get("Общая площадь")) or parse_area_m2(
+                labels.get("Площадь объекта")
+            )
 
             if year is not None:
                 by_year[year].append(delta_pct)
@@ -276,7 +285,9 @@ def main():
     print(f"\n# underflow(<0%)={underflow} overflow(>100%)={overflow}")
 
     summarize_group("delta_pct by year (from 'Дата начала приёма заявок')", by_year)
-    summarize_group("delta_pct by area bins (from 'Общая площадь'/'Площадь объекта')", by_area)
+    summarize_group(
+        "delta_pct by area bins (from 'Общая площадь'/'Площадь объекта')", by_area
+    )
 
     try:
         save_histogram_svg_png_fixed_0_100(hist, OUT_SVG, OUT_PNG)
