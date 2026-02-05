@@ -1,7 +1,5 @@
 {
   "dependencies": {
-    "lodash": "latest",
-    "puppeteer": "latest",
-    "simplify-geojson": "latest"
+    "puppeteer": "latest"
   }
 }

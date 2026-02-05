@@ -1,5 +1,6 @@
+"use strict";
+
 const puppeteer = require('puppeteer');
-const fs = require('node:fs');
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -19,19 +20,28 @@ async function asyncCall() {
 
     const page = await browser.newPage();
 
+    await page.setRequestInterception(true);
+
     await page.setViewport({
         width: 1920,
         height: 1080
     });
 
-    let open_page_success = 0;
+    page.on('request', (req) => {
+        if (req.resourceType() === 'image') {
+            req.abort();
+        } else {
+            req.continue();
+        }
+    });
 
-    await page.goto('https://platform.2gis.ru/ru/playground/geocoder', {
+    let url_stock = 'https://platform.2gis.ru/ru/playground/geocoder'
+
+    await page.goto(url_stock, {
         waitUntil: 'load',
-        timeout: 1000
+        timeout: 5000
     }).then(() => {
-        open_page_success = 1;
-    }).catch((res) => { });
+    }).catch((res) => { })
 
     let pages_from_file = [];
     require('fs').readFileSync('renovation_addresses.txt', 'utf-8').split(/\r?\n/).forEach(function (line) {
@@ -78,6 +88,7 @@ async function asyncCall() {
         await page.evaluate(div_with_data => div_with_data.value = '', div_with_data);
         await sleep(500);
     }
+
     await browser.close();
 }
 
