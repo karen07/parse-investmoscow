@@ -11,16 +11,18 @@ from pyproj import Transformer
 
 DEFAULT_OUT = "districts_in_mkad.geojson"
 
-MIN_RATIO = 0.1           # keep if >= this fraction inside MKAD
-SIMPLIFY_M = 60.0         # simplify in meters in EPSG:3857; 0 disables
-MKAD_BUFFER_M = 0.0       # buffer MKAD in meters; 0 disables
+MIN_RATIO = 0.1  # keep if >= this fraction inside MKAD
+SIMPLIFY_M = 60.0  # simplify in meters in EPSG:3857; 0 disables
+MKAD_BUFFER_M = 0.0  # buffer MKAD in meters; 0 disables
 
-DROP_PROPERTIES = 1       # 1: drop properties, 0: keep
-PRINT_URLS = 1            # 1: print CIAN URLs, 0: no output
+DROP_PROPERTIES = 1  # 1: drop properties, 0: keep
+PRINT_URLS = 1  # 1: print CIAN URLs, 0: no output
+
 
 def die(msg):
     print("error:", msg, file=sys.stderr)
     sys.exit(2)
+
 
 def usage():
     print(
@@ -30,8 +32,10 @@ def usage():
     )
     sys.exit(2)
 
+
 def load_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
 
 def load_geom_any(path):
     obj = load_json(path)
@@ -45,13 +49,16 @@ def load_geom_any(path):
         return shape(obj["geometry"])
     return shape(obj)
 
+
 def project_4326_to_3857(geom):
     tr = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
     return transform(tr.transform, geom)
 
+
 def project_3857_to_4326(geom):
     tr = Transformer.from_crs("EPSG:3857", "EPSG:4326", always_xy=True)
     return transform(tr.transform, geom)
+
 
 def get_name_from_properties(props):
     if not isinstance(props, dict):
@@ -69,6 +76,7 @@ def get_name_from_properties(props):
                 return v.strip()
 
     return None
+
 
 def pick_main_ring_wgs84(geom_wgs84):
     # Return exterior ring (lon, lat). For MultiPolygon pick the largest polygon.
@@ -99,8 +107,11 @@ def pick_main_ring_wgs84(geom_wgs84):
         coords.append(coords[0])
     return coords
 
+
 def build_cian_url(polygon_coords_lonlat, center_lat, center_lon):
-    raw_pairs = ",".join([f"{lon:.6f}_{lat:.6f}" for (lon, lat) in polygon_coords_lonlat])
+    raw_pairs = ",".join(
+        [f"{lon:.6f}_{lat:.6f}" for (lon, lat) in polygon_coords_lonlat]
+    )
     in_polygon = quote(raw_pairs, safe="._-")
     center = quote(f"{center_lat:.6f},{center_lon:.6f}", safe="")
 
@@ -112,6 +123,7 @@ def build_cian_url(polygon_coords_lonlat, center_lat, center_lon):
     )
 
     return f"{base}&center={center}&in_polygon[0]={in_polygon}"
+
 
 def parse_args(argv):
     # Minimal argv parsing (C-like).
@@ -134,6 +146,7 @@ def parse_args(argv):
     out = pos[2] if len(pos) == 3 else DEFAULT_OUT
 
     return districts, mkad, out, clip
+
 
 def main(argv):
     districts_path, mkad_path, out_path, clip = parse_args(argv)
@@ -181,11 +194,13 @@ def main(argv):
         else:
             out_geom = f["geometry"]
 
-        kept.append({
-            "type": "Feature",
-            "properties": {} if DROP_PROPERTIES else dict(props_src),
-            "geometry": out_geom,
-        })
+        kept.append(
+            {
+                "type": "Feature",
+                "properties": {} if DROP_PROPERTIES else dict(props_src),
+                "geometry": out_geom,
+            }
+        )
 
     out = {"type": "FeatureCollection", "features": kept}
     Path(out_path).write_text(json.dumps(out, ensure_ascii=True), encoding="utf-8")
@@ -211,6 +226,7 @@ def main(argv):
         Path("cian.txt").write_text("".join(out_urls), encoding="utf-8")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
