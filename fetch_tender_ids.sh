@@ -5,8 +5,10 @@ URL_SEARCH="$API_BASE/v2/filtered-tenders/searchtenderobjects"
 URL_INFO_BASE="$API_BASE/v1/object-info/gettenderobjectinformation?tenderId="
 
 PAGE_SIZE=100
-OUT_IDS='ids.txt'
 DATA_DIR='data'
+
+MAX_TRIES=5
+SLEEP_BASE=2
 
 BASE_REQ='{
   "orderBy": "Relevance",
@@ -18,73 +20,91 @@ BASE_REQ='{
   "tenderStatus": "nsi:tender_status_tender_filter:2"
 }'
 
+retry() {
+    label=$1
+    shift
+
+    i=1
+    while :; do
+        if "$@"; then
+            return 0
+        fi
+
+        if [ "$i" -ge "$MAX_TRIES" ]; then
+            echo "ERROR: $label failed after $MAX_TRIES tries" >&2
+            return 1
+        fi
+
+        echo "WARN: $label failed, retry $((i + 1))/$MAX_TRIES" >&2
+        sleep $((SLEEP_BASE * i))
+        i=$((i + 1))
+    done
+}
+
 do_search() {
     req_json=$1
-    curl -s "$URL_SEARCH" \
+    curl -fsS \
+        --connect-timeout 10 \
+        --max-time 60 \
         -H 'content-type: application/json' \
         -H 'accept: application/json' \
-        --data-raw "$req_json"
+        --data-raw "$req_json" \
+        "$URL_SEARCH" \
+        | jq -e .
 }
 
 do_info() {
     id=$1
-    curl -s "${URL_INFO_BASE}${id}" \
-        -H 'accept: application/json'
+    curl -fsS \
+        --connect-timeout 10 \
+        --max-time 60 \
+        -H 'accept: application/json' \
+        "${URL_INFO_BASE}${id}" \
+        | jq -e .
 }
 
 mkdir -p "$DATA_DIR"
-: >"$OUT_IDS"
 
 probe_req=$(printf '%s\n' "$BASE_REQ" | jq -c '.pageNumber=1 | .pageSize=1')
-probe_resp=$(do_search "$probe_req")
+probe_resp=$(retry "search probe" do_search "$probe_req")
 
 totalCount=$(printf '%s\n' "$probe_resp" | jq -r '.totalCount // empty')
+filteredCount=$(printf '%s\n' "$probe_resp" | jq -r '.filteredCount // empty')
 if [ -z "$totalCount" ] || [ "$totalCount" = "null" ]; then
-    echo "failed to extract .totalCount" >&2
-    printf '%s\n' "$probe_resp" | jq . >&2 || true
+    echo "ERROR: failed to extract totalCount" >&2
     exit 1
 fi
 
 pages=$(((totalCount + PAGE_SIZE - 1) / PAGE_SIZE))
-echo "totalCount=$totalCount pageSize=$PAGE_SIZE pages=$pages" >&2
+echo "filteredCount=$filteredCount totalCount=$totalCount pageSize=$PAGE_SIZE pages=$pages" >&2
 
 page=1
 while [ "$page" -le "$pages" ]; do
-    req_json=$(printf '%s\n' "$BASE_REQ" | jq -c --argjson p "$page" --argjson s "$PAGE_SIZE" \
+    req_json=$(printf '%s\n' "$BASE_REQ" | jq -c \
+        --argjson p "$page" \
+        --argjson s "$PAGE_SIZE" \
         '.pageNumber=$p | .pageSize=$s')
 
     echo "fetch page $page/$pages" >&2
-    resp=$(do_search "$req_json")
+    resp=$(retry "search page $page" do_search "$req_json")
 
     ids=$(printf '%s\n' "$resp" | jq -r '.entities[]? .tenders[]? .id')
-    if [ -n "$ids" ]; then
-        printf '%s\n' "$ids" >>"$OUT_IDS"
-    fi
 
     printf '%s\n' "$ids" | while IFS= read -r id; do
         [ -n "$id" ] || continue
-        out_file="${DATA_DIR}/${id}.json"
 
+        out_file="$DATA_DIR/$id.json"
         if [ -s "$out_file" ]; then
             echo "skip id=$id (exists)" >&2
             continue
         fi
 
-        echo "fetch info id=$id" >&2
-        info=$(do_info "$id")
+        info=$(retry "info id=$id" do_info "$id")
 
-        printf '%s\n' "$info" | jq . >"$out_file" || {
-            echo "failed to fetch/parse info for id=$id" >&2
-            rm -f "$out_file"
-            exit 1
-        }
+        printf '%s\n' "$info" >"$out_file"
     done
 
     page=$((page + 1))
 done
 
-sort -n "$OUT_IDS" | uniq >ids_unique_sorted.txt
-
-echo "written: $OUT_IDS" >&2
-echo "written: ids_unique_sorted.txt" >&2
-echo "data saved in: $DATA_DIR/" >&2
+echo "data saved in: $DATA_DIR" >&2
