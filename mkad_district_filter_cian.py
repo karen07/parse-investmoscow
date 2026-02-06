@@ -79,7 +79,6 @@ def get_name_from_properties(props):
 
 
 def pick_main_ring_wgs84(geom_wgs84):
-    # Return exterior ring (lon, lat). For MultiPolygon pick the largest polygon.
     if isinstance(geom_wgs84, Polygon):
         poly = geom_wgs84
     elif isinstance(geom_wgs84, MultiPolygon):
@@ -88,7 +87,6 @@ def pick_main_ring_wgs84(geom_wgs84):
             return None
         poly = max(polys, key=lambda p: p.area)
     else:
-        # Try to extract polygons from GeometryCollection-like inputs.
         try:
             acc = []
             for g in getattr(geom_wgs84, "geoms", []):
@@ -126,7 +124,6 @@ def build_cian_url(polygon_coords_lonlat, center_lat, center_lon):
 
 
 def parse_args(argv):
-    # Minimal argv parsing (C-like).
     clip = 0
     pos = []
 
