@@ -1,59 +1,73 @@
 "use strict";
 
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// node script.js file.txt
+// node script.js --file file.txt
+// node script.js -f file.txt
+function getInputFile() {
+    const argv = process.argv.slice(2);
+
+    const idxLong = argv.indexOf("--file");
+    if (idxLong !== -1 && argv[idxLong + 1]) return argv[idxLong + 1];
+
+    const idxShort = argv.indexOf("-f");
+    if (idxShort !== -1 && argv[idxShort + 1]) return argv[idxShort + 1];
+
+    if (argv[0] && !argv[0].startsWith("-")) return argv[0];
+
+    return "renovation_addresses.txt";
 }
 
 async function asyncCall() {
+    const inputFile = getInputFile();
+
+    if (!fs.existsSync(inputFile)) {
+        console.error(`File not found: ${inputFile}`);
+        process.exit(1);
+    }
+
     const browser = await puppeteer.launch({
         headless: false,
         args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
         ],
     });
 
     const page = await browser.newPage();
 
     await page.setRequestInterception(true);
+    await page.setViewport({ width: 1920, height: 1080 });
 
-    await page.setViewport({
-        width: 1920,
-        height: 1080
+    page.on("request", (req) => {
+        if (req.resourceType() === "image") req.abort();
+        else req.continue();
     });
 
-    page.on('request', (req) => {
-        if (req.resourceType() === 'image') {
-            req.abort();
-        } else {
-            req.continue();
-        }
-    });
-
-    let url_stock = 'https://platform.2gis.ru/ru/playground/geocoder'
+    const url_stock = "https://platform.2gis.ru/ru/playground/geocoder";
 
     await page.goto(url_stock, {
-        waitUntil: 'load',
-        timeout: 5000
-    }).then(() => {
-    }).catch((res) => { })
+        waitUntil: "load",
+        timeout: 5000,
+    }).catch(() => { });
 
-    let pages_from_file = [];
-    require('fs').readFileSync('renovation_addresses.txt', 'utf-8').split(/\r?\n/).forEach(function (line) {
-        if (line != '') {
-            pages_from_file.push(line);
-        }
-    });
+    const pages_from_file = fs
+        .readFileSync(inputFile, "utf-8")
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-    const all_p = await page.$$('p');
+    const all_p = await page.$$("p");
     let p_with_data;
     for (const k of all_p) {
-        const elementText = await page.evaluate(k => k.innerText, k);
+        const elementText = await page.evaluate((k) => k.innerText, k);
         if (elementText === "Ответ") {
             p_with_data = k;
             break;
@@ -61,13 +75,13 @@ async function asyncCall() {
     }
 
     await sleep(1000);
-    p_with_data.click();
+    await p_with_data.click();
     await sleep(1000);
 
-    const all_divs = await page.$$('input');
+    const all_inputs = await page.$$("input");
     let div_with_data;
-    for (const k of all_divs) {
-        const elementText = await page.evaluate(k => k.placeholder, k);
+    for (const k of all_inputs) {
+        const elementText = await page.evaluate((k) => k.placeholder, k);
         if (elementText === "Начните вводить") {
             div_with_data = k;
             break;
@@ -78,14 +92,17 @@ async function asyncCall() {
         await div_with_data.type(page_iter);
         await sleep(500);
 
-        const all_pre = await page.$('pre');
-        const elementText_pre = await page.evaluate(all_pre => all_pre.innerText, all_pre);
+        const all_pre = await page.$("pre");
+        const elementText_pre = await page.evaluate((pre) => pre.innerText, all_pre);
 
         const obj = JSON.parse(elementText_pre);
+        console.log(
+            obj["result"]["items"][0]["point"]["lat"],
+            ",",
+            obj["result"]["items"][0]["point"]["lon"]
+        );
 
-        console.log(obj['result']['items'][0]['point']['lat'], ',', obj['result']['items'][0]['point']['lon']);
-
-        await page.evaluate(div_with_data => div_with_data.value = '', div_with_data);
+        await page.evaluate((inp) => (inp.value = ""), div_with_data);
         await sleep(500);
     }
 
