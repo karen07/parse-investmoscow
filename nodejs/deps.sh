@@ -1,25 +1,39 @@
 #!/bin/sh
 
+say() { printf '%s\n' "$*"; }
+
+if ! command -v curl >/dev/null 2>&1; then
+    say "curl not found; installing..."
+    sudo apt update
+    sudo apt install -y curl ca-certificates
+fi
+
 if ! command -v fnm >/dev/null 2>&1; then
+    say "Installing fnm..."
     curl -fsSL https://fnm.vercel.app/install | bash
 fi
 
-if [ -x "$HOME/.local/share/fnm/fnm" ]; then
-    export PATH="$HOME/.local/share/fnm:$PATH"
-elif command -v fnm >/dev/null 2>&1; then
-    :
-else
-    echo "fnm not found after install. Check installation output." >&2
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+    PATH="$FNM_PATH:$PATH"
+    export PATH
+fi
+
+if ! command -v fnm >/dev/null 2>&1; then
+    say "ERROR: fnm not found after install. PATH=$PATH"
     exit 1
 fi
 
-eval "$(fnm env --use-on-cd)"
+eval "$(fnm env)"
 
+say "Installing Node 25..."
 fnm install 25
 fnm use 25
-node -v
-npm -v
 
+say "Node: $(node -v)"
+say "npm : $(npm -v)"
+
+say "Installing Chrome/Puppeteer runtime libraries..."
 sudo apt update
 sudo apt install -y \
     libatk1.0-0 \
@@ -43,4 +57,4 @@ sudo apt install -y \
     fonts-liberation \
     xdg-utils
 
-echo "Done."
+say "Done."
