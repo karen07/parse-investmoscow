@@ -125,7 +125,7 @@ def build_cian_url(polygon_coords_lonlat, center_lat, center_lon):
         "&offer_type=flat"
         "&is_first_floor=0"
         "&only_flat=1"
-        "&polygon_name[0]=Область"
+        "&polygon_name[0]=Area"
         "&wp=1"
         "&zoom=12"
     )

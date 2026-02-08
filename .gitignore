@@ -1,2 +1,4 @@
 data/
 renovation_coords.txt
+nodejs/node_modules
+nodejs/package-lock.json
