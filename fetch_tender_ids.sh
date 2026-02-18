@@ -31,11 +31,11 @@ retry() {
         fi
 
         if [ "$i" -ge "$MAX_TRIES" ]; then
-            echo "ERROR: $label failed after $MAX_TRIES tries" >&2
+            echo "ERROR: $label failed after $MAX_TRIES tries"
             return 1
         fi
 
-        echo "WARN: $label failed, retry $((i + 1))/$MAX_TRIES" >&2
+        echo "WARN: $label failed, retry $((i + 1))/$MAX_TRIES"
         sleep $((SLEEP_BASE * i))
         i=$((i + 1))
     done
@@ -71,12 +71,12 @@ probe_resp=$(retry "search probe" do_search "$probe_req")
 totalCount=$(printf '%s\n' "$probe_resp" | jq -r '.totalCount // empty')
 filteredCount=$(printf '%s\n' "$probe_resp" | jq -r '.filteredCount // empty')
 if [ -z "$totalCount" ] || [ "$totalCount" = "null" ]; then
-    echo "ERROR: failed to extract totalCount" >&2
+    echo "ERROR: failed to extract totalCount"
     exit 1
 fi
 
 pages=$(((totalCount + PAGE_SIZE - 1) / PAGE_SIZE))
-echo "filteredCount=$filteredCount totalCount=$totalCount pageSize=$PAGE_SIZE pages=$pages" >&2
+echo "filteredCount=$filteredCount totalCount=$totalCount pageSize=$PAGE_SIZE pages=$pages"
 
 page=1
 while [ "$page" -le "$pages" ]; do
@@ -85,7 +85,7 @@ while [ "$page" -le "$pages" ]; do
         --argjson s "$PAGE_SIZE" \
         '.pageNumber=$p | .pageSize=$s')
 
-    echo "fetch page $page/$pages" >&2
+    echo "fetch page $page/$pages"
     resp=$(retry "search page $page" do_search "$req_json")
 
     ids=$(printf '%s\n' "$resp" | jq -r '.entities[]? .tenders[]? .id')
@@ -95,7 +95,7 @@ while [ "$page" -le "$pages" ]; do
 
         out_file="$DATA_DIR/$id.json"
         if [ -s "$out_file" ]; then
-            echo "skip id=$id (exists)" >&2
+            echo "skip id=$id (exists)"
             continue
         fi
 
@@ -107,4 +107,4 @@ while [ "$page" -le "$pages" ]; do
     page=$((page + 1))
 done
 
-echo "data saved in: $DATA_DIR" >&2
+echo "data saved in: $DATA_DIR"
