@@ -43,7 +43,7 @@ retry() {
 
 do_search() {
     req_json=$1
-    curl -fsS \
+    curl -fsSL \
         --connect-timeout 10 \
         --max-time 60 \
         -H 'content-type: application/json' \
@@ -55,7 +55,7 @@ do_search() {
 
 do_info() {
     id=$1
-    curl -fsS \
+    curl -fsSL \
         --connect-timeout 10 \
         --max-time 60 \
         -H 'accept: application/json' \

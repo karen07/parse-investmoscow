@@ -2,12 +2,6 @@
 
 say() { printf '%s\n' "$*"; }
 
-if ! command -v curl >/dev/null 2>&1; then
-    say "curl not found; installing..."
-    sudo apt update
-    sudo apt install -y curl ca-certificates
-fi
-
 if ! command -v fnm >/dev/null 2>&1; then
     say "Installing fnm..."
     curl -fsSL https://fnm.vercel.app/install | bash
