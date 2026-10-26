@@ -1,10 +1,7 @@
 # Parse Invest Moscow
 
-Parse Invest Moscow is a set of scripts for collecting Invest Moscow tender data, matching tender coordinates to Moscow renovation locations, and generating an interactive HTML map.
-
-Shell scripts download the source datasets, while `renovation_geo_analytics.py` performs the coordinate matching and generates the map. The result can be filtered by year, price, and price type to inspect tenders near renovation locations.
-
-The repository keeps the collection and analysis steps explicit and reproducible: downloaded JSON data, generated coordinates, and the final HTML map are local artifacts rather than committed source files.
+Scripts for collecting Invest Moscow tender data, matching tender coordinates to Moscow
+renovation locations, and generating an interactive HTML map with filters.
 
 ## Описание
 
@@ -15,6 +12,17 @@ Parse Invest Moscow - набор скриптов для сбора данных
 Репозиторий делает этапы сбора и анализа явными и воспроизводимыми: загруженные данные JSON, сгенерированные координаты и итоговая HTML карта являются локальными результатами и не хранятся в репозитории как исходные файлы.
 
 ![Пример карты](./example.png)
+
+## Содержание
+
+- [Что делает проект](#%D1%87%D1%82%D0%BE-%D0%B4%D0%B5%D0%BB%D0%B0%D0%B5%D1%82-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)
+- [Структура проекта](#%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%82%D1%83%D1%80%D0%B0-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)
+- [Требования](#%D1%82%D1%80%D0%B5%D0%B1%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F)
+- [Быстрый старт](#%D0%B1%D1%8B%D1%81%D1%82%D1%80%D1%8B%D0%B9-%D1%81%D1%82%D0%B0%D1%80%D1%82)
+- [Полная схема](#%D0%BF%D0%BE%D0%BB%D0%BD%D0%B0%D1%8F-%D1%81%D1%85%D0%B5%D0%BC%D0%B0)
+- [Как работает карта](#%D0%BA%D0%B0%D0%BA-%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0%D0%B5%D1%82-%D0%BA%D0%B0%D1%80%D1%82%D0%B0)
+- [Фильтры в HTML карте](#%D1%84%D0%B8%D0%BB%D1%8C%D1%82%D1%80%D1%8B-%D0%B2-html-%D0%BA%D0%B0%D1%80%D1%82%D0%B5)
+- [Ограничения](#%D0%BE%D0%B3%D1%80%D0%B0%D0%BD%D0%B8%D1%87%D0%B5%D0%BD%D0%B8%D1%8F)
 
 ## Что делает проект
 
@@ -57,7 +65,7 @@ renovation_map.html
 | `renovation_coords.txt` | Локальный файл с координатами реновации. |
 | `renovation_map.html` | Готовая локальная HTML карта. |
 
-## Зависимости
+## Требования
 
 Нужны:
 
@@ -82,7 +90,7 @@ sudo pacman -S curl jq python python-pip
 python3 -m pip install pyproj
 ```
 
-## Быстрый запуск
+## Быстрый старт
 
 Скачать координаты реновации:
 
